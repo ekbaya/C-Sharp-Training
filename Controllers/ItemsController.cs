@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Catalog.Repositories;
 using System.Collections;
 using Catalog.Entities;
+using Catalog.Dtos;
 
 namespace Catalog.Controllers
 {
@@ -17,21 +18,28 @@ namespace Catalog.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<Item> GetItems()
+        public IEnumerable<ItemDto> GetItems()
         {
-           var items = repository.GetItems();
+           var items = repository.GetItems().Select(item=> new ItemDto
+           {
+               Id = item.Id,
+               Name = item.Name,
+               Price = item.Price,
+               CreatedDate = item.CreatedDate
+           });/*This will ensure that u do not break the clients when you are changing 
+           the Item as the database Evolve*/
            return items;
         }
 
         // GET /items/{id}
         [HttpGet("{id}")]
-        public ActionResult<Item> GetItem(Guid id)
+        public ActionResult<ItemDto> GetItem(Guid id)
         {
             var item = repository.GetItem(id);
             if(item is null){
                 return NotFound();
             }
-            return Ok(item);
+            return item.AsDto();
         }
     }
 }
